@@ -1,11 +1,14 @@
-import asyncio
-import os
+"""Copyright (c) 2021-25 MIT 6.102/6.031 course staff, all rights reserved.
+Redistribution of original or derived work requires permission of course staff.
+"""
+
 import sys
-from quart import Quart, send_from_directory
-import hypercorn
-from board import Board
-import commands
+import asyncio
 from urllib.parse import unquote
+from quart import Quart, send_from_directory
+from .board import Board
+from .commands import look, flip, map_cards, watch
+
 
 async def main():
     """
@@ -83,7 +86,7 @@ class WebServer:
         """
         @self.app.route('/look/<player_id>', methods=['GET'])
         async def look_endpoint(player_id: str):
-            board_state = await commands.look(self.board, player_id)
+            board_state = await look(self.board, player_id)
             return board_state, 200, {'Content-Type': 'text/plain'}
 
         """
@@ -104,7 +107,7 @@ class WebServer:
                 return 'invalid location format', 400, {'Content-Type': 'text/plain'}
             
             try:
-                board_state = await commands.flip(self.board, player_id, row, column)
+                board_state = await flip(self.board, player_id, row, column)
                 return board_state, 200, {'Content-Type': 'text/plain'}
             except Exception as err:
                 return f'cannot flip this card: {err}', 409, {'Content-Type': 'text/plain'}
@@ -195,7 +198,8 @@ class WebServer:
         """
         Stop this server. Once stopped, this server cannot be restarted.
         """
-        # Quart/Hypercorn shutdown would be handled diff        print('server stopped')
+        # Quart/Hypercorn shutdown would be handled differently
+        print('server stopped')
 
 
 if __name__ == '__main__':
