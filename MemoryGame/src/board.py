@@ -4,6 +4,9 @@ from typing import List, Dict, Set, Tuple, Optional
 
 
 class Board:
+    # rep invariant: grid != [] and card != "" if not None, faces_up have controllers, etc.
+    # abstraction function: AF(cols, rows, grid, faces_up, controllers, controls) = memory scramble board with same cards, face state, ownership
+    # safety from rep exposure: only constructors and mutators change rep, no direct access
     def __init__(self, grid: List[List[str]]) -> None:
         self._rows = len(grid)
         self._cols = len(grid[0]) if grid else 0
@@ -34,6 +37,10 @@ class Board:
                 idx += 1
 
         return Board(grid)
+
+
+    def __str__(self) -> str:
+        return self.get_board_state("")
 
     def check_rep(self) -> None:
         # grid dimensions
@@ -80,39 +87,65 @@ class Board:
         return '\n'.join(result)
 
     async def flip_card(self, player_id: str, row: int, col: int) -> str:
-        assert 0 <= row < self._rows and 0 <= col < self._cols, "invalid position"
+        assert 0 <= row < self._rows and 0 <= col < self._cols
 
         pos = (row, col)
         async with self._lock:
+            player_controls = self._controls.get(player_id, [])
+
+            # cleanup previous play if exists
+            if len(player_controls) >= 2:
+                # had matching pair, remove them
+                for p in player_controls:
+                    self._grid[p[0]][p[1]] = None
+                    del self._controllers[p]
+                self._faces_up -= set(player_controls)
+                self._controls[player_id] = []
+                player_controls = []
+            if len(player_controls) == 1:
+                # had mismatched, turn down if uncontrolled
+                p = player_controls[0]
+                if p in self._faces_up and self._controllers.get(p) != player_id:
+                    self._faces_up.remove(p)
+                    del self._controllers[p]
+                self._controls[player_id] = []
+                player_controls = []
+
+            # now check the flip
             if self._grid[row][col] is None:
-                raise ValueError("no card there")
+                raise ValueError("cannot flip: no card")  # 1A
 
-            # get current controls for player
-            current_controls = self._controls.get(player_id, [])
-
-            # rule 1a: empty space fails
-            if self._grid[row][col] is None:
-                raise ValueError("cannot flip: no card")
-
-            card = self._grid[row][col]
-
-            # is face up?
             is_face_up = pos in self._faces_up
             controller = self._controllers.get(pos)
 
-            # waiting never happens in sync
-            if not is_face_up:
-                # rule 1b: down -> up, control
-                self._faces_up.add(pos)
+            if len(player_controls) == 0:  # first card
+                if is_face_up and controller is not None and controller != player_id:
+                    raise ValueError("cannot flip: controlled by other player")  # 1D
+                # rules 1B and 1C: turn face up and control
+                if not is_face_up:
+                    self._faces_up.add(pos)
                 self._controllers[pos] = player_id
-                current_controls.append(pos)
-                self._controls[player_id] = current_controls
-            elif controller == player_id:
-                # rule 1c: up, controlled by self -> remains
-                pass
-            elif controller is not None:
-                # rule 1d: controlled by other -> wait, but sync can't wait, so fail
-                raise ValueError("cannot flip: controlled by other player")
+                self._controls[player_id] = [pos]
+            elif len(player_controls) == 1:  # second card
+                if self._grid[row][col] is None:
+                    raise ValueError("cannot flip: no card")  # 2A
+                if is_face_up and controller is not None:
+                    raise ValueError("cannot flip: controlled card")  # 2B
+                # rules 2C: turn up if down
+                if not is_face_up:
+                    self._faces_up.add(pos)
+                self._controllers[pos] = player_id
+                # check if match
+                first_pos = player_controls[0]
+                first_card = self._grid[first_pos[0]][first_pos[1]]
+                card = self._grid[row][col]
+                if first_card == card:
+                    player_controls.append(pos)  # keep control
+                    self._controls[player_id] = player_controls
+                else:
+                    self._controls[player_id] = [first_pos, pos]  # keep for cleanup
+            else:
+                raise ValueError("unexpected controls count")
 
             self.check_rep()
             return self.get_board_state(player_id)

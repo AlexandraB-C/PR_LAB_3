@@ -83,7 +83,7 @@ class WebServer:
         """
         @self.app.route('/look/<player_id>', methods=['GET'])
         async def look_endpoint(player_id: str):
-            board_state = await look(self.board, player_id)
+            board_state = await commands.look(self.board, player_id)
             return board_state, 200, {'Content-Type': 'text/plain'}
 
         """
@@ -104,7 +104,7 @@ class WebServer:
                 return 'invalid location format', 400, {'Content-Type': 'text/plain'}
             
             try:
-                board_state = await flip(self.board, player_id, row, column)
+                board_state = await commands.flip(self.board, player_id, row, column)
                 return board_state, 200, {'Content-Type': 'text/plain'}
             except Exception as err:
                 return f'cannot flip this card: {err}', 409, {'Content-Type': 'text/plain'}
