@@ -1,5 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.coverage
+.coverage.*
+
+# Node (keep in case)
+node_modules/
+package-lock.json
+dist/
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
-/node_modules/
-/package-lock.json
-/dist/
-/coverage/
