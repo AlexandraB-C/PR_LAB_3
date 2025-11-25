@@ -16,38 +16,31 @@ You MUST NOT change the names, type signatures, or specs of these functions.
 
 async def look(board: Board, player_id: str) -> str:
     """
-    Looks at the current state of the board.
+    looks at the current state of the board.
 
-    Args:
-        board: a Memory Scramble board
-        player_id: ID of player looking at the board; 
-                   must be a nonempty string of alphanumeric or underscore characters
-    Returns:
-        the state of the board from the perspective of player_id, in the format 
-        described in the ps4 handout
+    args:
+        board: a memory scramble board
+        player_id: ID of player looking at the board
+    returns:
+        the state of the board from the perspective of player_id
     """
     return await board.look(player_id)
 
 
 async def flip(board: Board, player_id: str, row: int, column: int) -> str:
     """
-    Tries to flip over a card on the board, following the rules in the ps4 handout.
-    If another player controls the card, then this operation waits until the flip 
-    either becomes possible or fails.
+    tries to flip over a card on the board.
+    if another player controls the card, waits until flip becomes possible or fails.
 
-    Args:
-        board: a Memory Scramble board
-        player_id: ID of player making the flip; 
-                   must be a nonempty string of alphanumeric or underscore characters
-        row: row number of card to flip;
-             must be an integer in [0, height of board), indexed from the top of the board
-        column: column number of card to flip; 
-                must be an integer in [0, width of board), indexed from the left of the board
-    Returns:
-        the state of the board after the flip from the perspective of player_id, in the 
-        format described in the ps4 handout
-    Raises:
-        an error if the flip operation fails as described in the ps4 handout.
+    args:
+        board: a memory scramble board
+        player_id: ID of player making the flip
+        row: row number of card to flip
+        column: column number of card to flip
+    returns:
+        the state of the board after the flip from the perspective of player_id
+    raises:
+        error if the flip operation fails
     """
     return await board.flip(player_id, row, column)
 

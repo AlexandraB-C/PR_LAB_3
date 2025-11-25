@@ -9,17 +9,13 @@ from .board import Board
 
 async def simulation_main():
     """
-    Simulate a multi-player Memory Scramble game.
-    
-    Requirements: 4 players, timeouts between 0.1ms and 2ms, 100 moves each.
-    This function simulates multiple players making random moves concurrently
+    simulate a multi-player memory scramble game.
+    requirements: 4 players, timeouts between 0.1ms and 2ms, 100 moves each.
+    simulates multiple players making random moves concurrently
     to test that the game works correctly under concurrent access and never crashes.
-    
-    PS4 instructions: you may use, modify, or remove this file,
-      completing it is recommended but not required.
-    
-    Raises:
-        Error if an error occurs reading or parsing the board
+
+    raises:
+        error if error occurs reading or parsing the board
     """
     filename = 'boards/ab.txt'
     board: Board = await Board.parse_from_file(filename)
@@ -146,4 +142,3 @@ async def timeout(milliseconds: float):
 
 if __name__ == '__main__':
     asyncio.run(simulation_main())
-

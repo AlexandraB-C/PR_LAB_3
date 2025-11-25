@@ -10,25 +10,25 @@ from collections import defaultdict
 
 class Board:
     """
-    A mutable Memory Scramble game board with asynchronous support for concurrent players.
-    
-    A Board represents a grid of cards that players can flip over to find matching pairs.
-    Cards can be face up or face down, controlled by players, or removed from the board.
-    
-    Representation:
+    mutable memory scramble game board with async support for concurrent players.
+
+    board represents a grid of cards that players can flip over to find matching pairs.
+    cards can be face up or face down, controlled by players, or removed from the board.
+
+    representation:
     - _rows: number of rows in the board
     - _columns: number of columns in the board
     - _cards: 2D list of card values (strings), None if card is removed
     - _face_up: 2D list of booleans, True if card is face up, False if face down
-    - _controllers: 2D list of player IDs (strings) or None, tracks who controls each card
+    - _controllers: 2D list of player IDs (strings) or None, who controls each card
     - _player_cards: maps player_id to list of (row, col) tuples of cards they control
     - _previous_moves: maps player_id to (cards_list, matched) tuple for cleanup rules
     - _waiting_players: maps (row, col) to list of asyncio.Event for players waiting on that card
     - _lock: asyncio.Lock for thread-safety
     - _map_locks: maps card value to asyncio.Lock for pairwise consistency in map operations
-    
-    Abstraction function:
-    AF(self) = a Memory Scramble board with:
+
+    abstraction function:
+    AF(self) = a memory scramble board with:
     - Grid size: _rows × _columns
     - For each position (r, c):
       - If _cards[r][c] is None: empty space (card removed)
@@ -38,8 +38,8 @@ class Board:
     - _player_cards[player_id] = list of positions controlled by that player
     - _previous_moves[player_id] = (previous cards, whether they matched) for cleanup
     - _waiting_players[(r, c)] = list of events for players waiting to control card at (r, c)
-    
-    Representation invariant:
+
+    representation invariant:
     - _rows > 0 and _columns > 0
     - len(_cards) == _rows
     - For all r in [0, _rows): len(_cards[r]) == _columns
@@ -49,8 +49,8 @@ class Board:
     - If _controllers[r][c] is not None, then _face_up[r][c] is True
     - _player_cards[player_id] contains only valid positions where _controllers[row][col] == player_id
     - All positions in _player_cards[player_id] have _controllers set to player_id
-    
-    Safety from rep exposure:
+
+    safety from rep exposure:
     - All fields are private (start with _)
     - Methods return new lists/tuples, not references to internal representation
     - Player IDs are strings provided by clients, so no rep exposure concern
@@ -58,30 +58,25 @@ class Board:
     
     def __init__(self, rows: int, columns: int, cards: List[List[str]]):
         """
-        Create a new board with the given dimensions and cards.
-        
-        Preconditions:
+        create a new board with the given dimensions and cards.
+
+        preconditions:
             - rows > 0
             - columns > 0
             - len(cards) == rows
-            - For all i in [0, rows): len(cards[i]) == columns
-            - All card values are non-empty strings of non-whitespace characters
-        
-        Args:
-            rows: number of rows (must be > 0)
-            columns: number of columns (must be > 0)
-            cards: 2D list of card values, must be rows×columns
-        
-        Raises:
-            ValueError if dimensions are invalid or cards don't match dimensions
-        
-        Postconditions:
-            - self._rows == rows
-            - self._columns == columns
-            - self._cards contains copies of the input cards (no rep exposure)
-            - All cards start face down
-            - No cards are controlled
-            - self.check_rep() passes
+            - all card values are non-empty strings of non-whitespace characters
+
+        args:
+            rows: number of rows
+            columns: number of columns
+            cards: 2d list of card values
+
+        raises:
+            ValueError if dimensions are invalid
+
+        postconditions:
+            - all cards start face down
+            - no cards are controlled
         """
         if rows <= 0 or columns <= 0:
             raise ValueError('Board dimensions must be positive')
